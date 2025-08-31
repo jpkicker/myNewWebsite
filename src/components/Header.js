@@ -10,7 +10,7 @@ function Header({ currentPage, setCurrentPage }) {
       <div className="container">
         <div className="header-content">
           <div className="logo-section">
-            <div className="logo">Jason Ranney</div>
+            <div className="logo">JasonRanney.com</div>
           </div>
           <nav>
             <ul>

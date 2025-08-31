@@ -1,19 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import emailjs from 'emailjs-com';
 
 function Samples() {
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
+    accountNumber: '',
     company: '',
     address: '',
     productType: '',
-    projectType: '',
-    timeline: '',
     specificProducts: '',
     additionalInfo: ''
   });
+
+  // Initialize EmailJS
+  useEffect(() => {
+    emailjs.init("EsGqyOamAwbbhxg7e"); // Your EmailJS Public Key
+    console.log('EmailJS initialized with public key:', "EsGqyOamAwbbhxg7e");
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -25,29 +32,56 @@ function Samples() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/samples', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      // EmailJS template parameters - simple format
+      const templateParams = {
+        to_name: 'Jason Ranney',
+        to_email: 'jpkicker@gmail.com',
+        from_name: formData.name,
+        from_email: formData.email,
+        message: `
+New Sample Request from ${formData.name}
 
-      const result = await response.json();
+Contact Information:
+- Name: ${formData.name}
+- Email: ${formData.email}
+- Phone: ${formData.phone || 'Not provided'}
+- Account Number: ${formData.accountNumber || 'Not provided'}
+- Company: ${formData.company || 'Not provided'}
 
-      if (result.success) {
+Shipping Address:
+${formData.address}
+
+Product Details:
+- Product Type: ${formData.productType}
+
+Specific Products/Colors:
+${formData.specificProducts || 'Not specified'}
+
+Additional Information:
+${formData.additionalInfo || 'None provided'}
+        `
+      };
+
+      // Send email using EmailJS - simple format
+      const response = await emailjs.send(
+        'service_kr8f7t2',
+        'template_ba7capf',
+        templateParams
+      );
+
+      if (response.status === 200) {
         setShowSuccess(true);
         setFormData({
           name: '',
           email: '',
           phone: '',
+          accountNumber: '',
           company: '',
           address: '',
           productType: '',
-          projectType: '',
-          timeline: '',
           specificProducts: '',
           additionalInfo: ''
         });
@@ -55,12 +89,17 @@ function Samples() {
         setTimeout(() => {
           setShowSuccess(false);
         }, 5000);
-      } else {
-        alert('Failed to submit request: ' + result.message);
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Failed to submit request. Please try again or contact us directly.');
+      console.error('EmailJS Error Details:', error);
+      console.error('Error Code:', error.code);
+      console.error('Error Message:', error.message);
+      console.error('Error Status:', error.status);
+      console.error('Error Text:', error.text);
+      console.error('Full Error Object:', JSON.stringify(error, null, 2));
+      alert(`Failed to submit request. Error: ${error.message || 'Unknown error'}. Please try again or contact us directly at jpkicker@gmail.com`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -69,7 +108,7 @@ function Samples() {
       <section className="form-section">
         <div className="container">
           <h2 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '2rem', color: '#1e3a8a' }}>Order Your Flooring Samples</h2>
-          <p style={{ textAlign: 'center', fontSize: '1.2rem', color: '#64748b', marginBottom: '3rem' }}>Get free samples of our premium Shaw flooring products delivered directly to you.</p>
+          <p style={{ textAlign: 'center', fontSize: '1.2rem', color: '#64748b', marginBottom: '3rem' }}>Get free samples of our premium Shaw flooring products delivered directly to your business for customer presentations and sales support.</p>
           
           <div className="form-container">
             {showSuccess && (
@@ -115,7 +154,19 @@ function Samples() {
               </div>
               
               <div className="form-group">
-                <label htmlFor="company">Company/Organization</label>
+                <label htmlFor="accountNumber">Account Number</label>
+                <input 
+                  type="text" 
+                  id="accountNumber" 
+                  name="accountNumber" 
+                  value={formData.accountNumber}
+                  onChange={handleInputChange}
+                  placeholder="Your account number (if applicable)"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="company">Company/Store Name *</label>
                 <input 
                   type="text" 
                   id="company" 
@@ -126,7 +177,7 @@ function Samples() {
               </div>
               
               <div className="form-group">
-                <label htmlFor="address">Shipping Address *</label>
+                <label htmlFor="address">Business Shipping Address *</label>
                 <textarea 
                   id="address" 
                   name="address" 
@@ -147,70 +198,47 @@ function Samples() {
                   required
                 >
                   <option value="">Select Product Type</option>
-                  <option value="coretec">COREtec Floors</option>
-                  <option value="laminate">Shaw Laminate</option>
-                  <option value="vinyl">Shaw Vinyl</option>
-                  <option value="hardwood">Shaw Hardwood</option>
-                  <option value="multiple">Multiple Products</option>
-                  <option value="consultation">Need Consultation</option>
+                                     <option value="coretec">COREtec Floors</option>
+                   <option value="laminate">Shaw Laminate</option>
+                   <option value="vinyl">Shaw Vinyl</option>
+                   <option value="hardwood">Shaw Hardwood</option>
+                   <option value="porcelain">Shaw Porcelain</option>
+                   <option value="anderson-tuftex">Anderson Tuftex</option>
+                   <option value="multiple">Multiple Products</option>
+                   <option value="consultation">Need Consultation</option>
                 </select>
               </div>
               
               <div className="form-group">
-                <label htmlFor="projectType">Project Type</label>
-                <select 
-                  id="projectType" 
-                  name="projectType" 
-                  value={formData.projectType}
-                  onChange={handleInputChange}
-                >
-                  <option value="">Select Project Type</option>
-                  <option value="residential">Residential</option>
-                  <option value="commercial">Commercial</option>
-                  <option value="renovation">Renovation</option>
-                  <option value="new-construction">New Construction</option>
-                </select>
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="timeline">Project Timeline</label>
-                <select 
-                  id="timeline" 
-                  name="timeline" 
-                  value={formData.timeline}
-                  onChange={handleInputChange}
-                >
-                  <option value="">Select Timeline</option>
-                  <option value="immediate">Immediate (1-2 weeks)</option>
-                  <option value="month">Within 1 month</option>
-                  <option value="quarter">Within 3 months</option>
-                  <option value="planning">Planning phase</option>
-                </select>
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="specificProducts">Specific Products or Colors</label>
+                <label htmlFor="specificProducts">Specific Products or Colors of Interest</label>
                 <textarea 
                   id="specificProducts" 
                   name="specificProducts" 
-                  placeholder="If you have specific product names, colors, or styles in mind, please let us know..."
+                  placeholder="If you have specific product names, colors, or styles in mind for your customers, please let us know..."
                   value={formData.specificProducts}
                   onChange={handleInputChange}
                 ></textarea>
               </div>
               
               <div className="form-group">
-                <label htmlFor="additionalInfo">Additional Information</label>
+                <label htmlFor="additionalInfo">Additional Information or Special Requirements</label>
                 <textarea 
                   id="additionalInfo" 
                   name="additionalInfo" 
-                  placeholder="Any additional details about your project, special requirements, or questions..."
+                  placeholder="Any additional details about your business needs, special requirements, or questions..."
                   value={formData.additionalInfo}
                   onChange={handleInputChange}
                 ></textarea>
               </div>
               
-              <button type="submit" className="btn" style={{ width: '100%' }}>Request Samples</button>
+              <button 
+                type="submit" 
+                className="btn" 
+                style={{ width: '100%' }}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Request Samples'}
+              </button>
             </form>
           </div>
         </div>

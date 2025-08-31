@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import emailjs from 'emailjs-com';
 
 function Contact() {
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -11,6 +13,12 @@ function Contact() {
     subject: '',
     message: ''
   });
+
+  // Initialize EmailJS
+  useEffect(() => {
+    emailjs.init("EsGqyOamAwbbhxg7e"); // Your EmailJS Public Key
+    console.log('EmailJS initialized with public key:', "EsGqyOamAwbbhxg7e");
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -22,19 +30,41 @@ function Contact() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      // EmailJS template parameters - simple format
+      const templateParams = {
+        to_name: 'Jason Ranney',
+        to_email: 'jpkicker@gmail.com',
+        from_name: formData.name,
+        from_email: formData.email,
+        message: `
+New Contact Form Submission from ${formData.name}
 
-      const result = await response.json();
+Contact Information:
+- Name: ${formData.name}
+- Email: ${formData.email}
+- Phone: ${formData.phone || 'Not provided'}
+- Company: ${formData.company || 'Not provided'}
 
-      if (result.success) {
+Inquiry Details:
+- Inquiry Type: ${formData.inquiryType || 'Not specified'}
+- Subject: ${formData.subject || 'Not specified'}
+
+Message:
+${formData.message}
+        `
+      };
+
+      // Send email using EmailJS - simple format
+      const response = await emailjs.send(
+        'service_kr8f7t2',
+        'template_jj0b37p',
+        templateParams
+      );
+
+      if (response.status === 200) {
         setShowSuccess(true);
         setFormData({
           name: '',
@@ -49,12 +79,17 @@ function Contact() {
         setTimeout(() => {
           setShowSuccess(false);
         }, 5000);
-      } else {
-        alert('Failed to send message: ' + result.message);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
-      alert('Failed to send message. Please try again or contact us directly.');
+      console.error('EmailJS Error Details:', error);
+      console.error('Error Code:', error.code);
+      console.error('Error Message:', error.message);
+      console.error('Error Status:', error.status);
+      console.error('Error Text:', error.text);
+      console.error('Full Error Object:', JSON.stringify(error, null, 2));
+      alert(`Failed to send message. Error: ${error.message || 'Unknown error'}. Please try again or contact us directly at jpkicker@gmail.com`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -63,7 +98,7 @@ function Contact() {
       <section className="form-section">
         <div className="container">
           <h2 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '2rem', color: '#1e3a8a' }}>Contact Your Shaw Territory Manager</h2>
-          <p style={{ textAlign: 'center', fontSize: '1.2rem', color: '#64748b', marginBottom: '3rem' }}>Ready to discuss your flooring project? Let's connect and find the perfect solution for your needs.</p>
+          <p style={{ textAlign: 'center', fontSize: '1.2rem', color: '#64748b', marginBottom: '3rem' }}>Ready to discuss your business needs? Let's connect and find the perfect solutions to help grow your flooring business.</p>
           
           <div className="form-container">
             {showSuccess && (
@@ -109,7 +144,7 @@ function Contact() {
               </div>
               
               <div className="form-group">
-                <label htmlFor="contactCompany">Company/Organization</label>
+                <label htmlFor="contactCompany">Company/Store Name *</label>
                 <input 
                   type="text" 
                   id="contactCompany" 
@@ -154,7 +189,7 @@ function Contact() {
                 <textarea 
                   id="message" 
                   name="message" 
-                  placeholder="Please provide details about your flooring project, questions, or how I can help you..." 
+                  placeholder="Please provide details about your business needs, questions, or how I can help grow your flooring business..." 
                   required 
                   style={{ height: '150px' }}
                   value={formData.message}
@@ -162,7 +197,14 @@ function Contact() {
                 ></textarea>
               </div>
               
-              <button type="submit" className="btn" style={{ width: '100%' }}>Send Message</button>
+              <button 
+                type="submit" 
+                className="btn" 
+                style={{ width: '100%' }}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Sending...' : 'Send Message'}
+              </button>
             </form>
             
             <div style={{ marginTop: '3rem', textAlign: 'center', paddingTop: '2rem', borderTop: '2px solid #e2e8f0' }}>
