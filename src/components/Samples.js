@@ -173,6 +173,7 @@ ${formData.additionalInfo || 'None provided'}
                   name="company" 
                   value={formData.company}
                   onChange={handleInputChange}
+                  placeholder="ABC Flooring Inc."
                 />
               </div>
               
@@ -203,9 +204,9 @@ ${formData.additionalInfo || 'None provided'}
                    <option value="vinyl">Shaw Vinyl</option>
                    <option value="hardwood">Shaw Hardwood</option>
                    <option value="porcelain">Shaw Porcelain</option>
-                   <option value="anderson-tuftex">Anderson Tuftex</option>
+                   <option value="anderson-tuftex-hardwood">Anderson Tuftex Hardwood</option>
                    <option value="multiple">Multiple Products</option>
-                   <option value="consultation">Need Consultation</option>
+                   <option value="Other">Other</option>
                 </select>
               </div>
               
@@ -214,7 +215,7 @@ ${formData.additionalInfo || 'None provided'}
                 <textarea 
                   id="specificProducts" 
                   name="specificProducts" 
-                  placeholder="If you have specific product names, colors, or styles in mind for your customers, please let us know..."
+                  placeholder="List the Stye Number and Style Name, ie. VV810, Color Conch Ash, for each sample requested."
                   value={formData.specificProducts}
                   onChange={handleInputChange}
                 ></textarea>
@@ -225,7 +226,7 @@ ${formData.additionalInfo || 'None provided'}
                 <textarea 
                   id="additionalInfo" 
                   name="additionalInfo" 
-                  placeholder="Any additional details about your business needs, special requirements, or questions..."
+                  placeholder="How many sample swatches do you need?"
                   value={formData.additionalInfo}
                   onChange={handleInputChange}
                 ></textarea>
