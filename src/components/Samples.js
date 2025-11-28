@@ -67,7 +67,7 @@ ${formData.additionalInfo || 'None provided'}
 
       // Send email using EmailJS - simple format
       const response = await emailjs.send(
-        'service_kr8f7t2',
+        'service_nfks9v2',
         'template_ba7capf',
         templateParams
       );
